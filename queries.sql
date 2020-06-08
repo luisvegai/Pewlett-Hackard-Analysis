@@ -191,3 +191,96 @@ WHERE tl0.dept_name IN ('Sales', 'Development');
 -- AND (de.to_date = '9999-01-01')
 -- AND (d.dept_name = 'Sales' OR d.dept_name = 'Development');
 
+
+
+----------------------------------
+--CHALLENGE
+----------------------------------
+
+-- Challenge_derivable_1
+
+-- Quoting from the section 7.3.1 in Module 7:
+-- "Bobby’s boss has determined that anyone born between 1952 and 1955 will begin to retire".
+-- "This time, we’re looking for employees born between 1952 and 1955, who were also hired between 1985 and 1988.""
+-- Following this definition, I determined the number of retiring people in the following way
+-- and following instruction given by the Challenge to the maximum possible extent:
+
+-- Preparing a full table
+SELECT e.emp_no, e.first_name, e.last_name, ti.title, ti.from_date, s.salary, de.to_date
+INTO challenge_d1_full
+FROM employees as e
+INNER JOIN titles as ti
+ON (e.emp_no = ti.emp_no)
+INNER JOIN salaries as s
+ON (e.emp_no = s.emp_no)
+INNER JOIN dept_emp as de
+ON (e.emp_no = de.emp_no)
+WHERE (e.birth_date BETWEEN '1952-01-01' AND '1955-12-31')
+AND (e.hire_date BETWEEN '1985-01-01' AND '1988-12-31')
+AND (de.to_date = '9999-01-01');
+
+
+-- Selecting the desired records from the full table
+SELECT emp_no, first_name, last_name, title, from_date
+INTO challenge_d1
+FROM
+  (SELECT cd1f.emp_no, cd1f.first_name, cd1f.last_name, cd1f.title, cd1f.from_date,
+     ROW_NUMBER() OVER 
+(PARTITION BY (emp_no) ORDER BY from_date DESC) rn
+   FROM challenge_d1_full as cd1f
+  ) tmp WHERE rn = 1;
+
+
+
+-- Challenge_derivable_2: Mentorship program 1965
+
+-- preparing a full table
+SELECT cd1.emp_no, cd1.first_name, cd1.last_name, cd1.title, cd1.from_date, ti.to_date, e.birth_date
+INTO challenge_d2_full_b
+FROM challenge_d1 as cd1
+INNER JOIN employees as e
+ON (cd1.emp_no = e.emp_no)
+INNER JOIN titles as ti
+ON (cd1.emp_no = ti.emp_no)
+WHERE (e.birth_date BETWEEN '1965-01-01' AND '1965-12-31');
+
+
+-- Selecting the desired records from the full table
+SELECT emp_no, first_name, last_name, title, from_date, to_date
+INTO challenge_d2_b
+FROM
+  (SELECT cd2fb.emp_no, cd2fb.first_name, cd2fb.last_name, cd2fb.title, cd2fb.from_date, cd2fb.to_date, cd2fb.birth_date,
+     ROW_NUMBER() OVER 
+(PARTITION BY (emp_no) ORDER BY to_date ASC) rn
+	FROM challenge_d2_full_b as cd2fb
+  ) tmp WHERE rn = 1;
+
+-- Result: 0 records selected.
+-- Since one of the conditions that define retiring employees is that they are born
+-- between 1952 and 1955, there is no retiring employee fit for the mentorship program
+-- because the condition for this is to have been born in 1965.
+-- If we change the condition of eligibility to: being born in the year 1955, we can extract
+-- the desired data by using the following query script:
+
+-- EXTRA Challenge_derivable_2: Mentorship program 1955
+-- preparing a full table
+SELECT cd1.emp_no, cd1.first_name, cd1.last_name, cd1.title, cd1.from_date, ti.to_date, e.birth_date
+INTO challenge_d2_full
+FROM challenge_d1 as cd1
+INNER JOIN employees as e
+ON (cd1.emp_no = e.emp_no)
+INNER JOIN titles as ti
+ON (cd1.emp_no = ti.emp_no)
+WHERE (e.birth_date BETWEEN '1955-01-01' AND '1955-12-31');
+
+
+-- Selecting the desired records from the full table
+SELECT emp_no, first_name, last_name, title, from_date, to_date
+INTO challenge_d2
+FROM
+  (SELECT cd2f.emp_no, cd2f.first_name, cd2f.last_name, cd2f.title, cd2f.from_date, cd2f.to_date, cd2f.birth_date,
+     ROW_NUMBER() OVER 
+(PARTITION BY (emp_no) ORDER BY to_date ASC) rn
+	FROM challenge_d2_full as cd2f
+  ) tmp WHERE rn = 1;
+
