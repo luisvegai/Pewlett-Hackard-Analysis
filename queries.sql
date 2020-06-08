@@ -251,7 +251,7 @@ INTO challenge_d2_b
 FROM
   (SELECT cd2fb.emp_no, cd2fb.first_name, cd2fb.last_name, cd2fb.title, cd2fb.from_date, cd2fb.to_date, cd2fb.birth_date,
      ROW_NUMBER() OVER 
-(PARTITION BY (emp_no) ORDER BY to_date ASC) rn
+(PARTITION BY (emp_no) ORDER BY to_date DESC) rn
 	FROM challenge_d2_full_b as cd2fb
   ) tmp WHERE rn = 1;
 
@@ -280,7 +280,9 @@ INTO challenge_d2
 FROM
   (SELECT cd2f.emp_no, cd2f.first_name, cd2f.last_name, cd2f.title, cd2f.from_date, cd2f.to_date, cd2f.birth_date,
      ROW_NUMBER() OVER 
-(PARTITION BY (emp_no) ORDER BY to_date ASC) rn
+(PARTITION BY (emp_no) ORDER BY to_date DESC) rn
 	FROM challenge_d2_full as cd2f
   ) tmp WHERE rn = 1;
+
+
 
